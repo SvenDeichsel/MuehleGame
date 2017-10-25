@@ -16,14 +16,15 @@ class GameViewController: UIViewController {
         super.viewDidLoad()
         
         if let view = self.view as! SKView? {
-            // Load the SKScene from 'GameScene.sks'
-            if let scene = SKScene(fileNamed: "GameScene") {
-                // Set the scale mode to scale to fit the window
-                scene.scaleMode = .aspectFill
-                
-                // Present the scene
-                view.presentScene(scene)
-            }
+            let length = min(view.frame.width, view.frame.height)
+            let centerSquare = CGRect(x: (view.frame.width - length) / 2, y: (view.frame.height - length) / 2, width: length, height: length)
+            
+            let scene = MuehleScene(size: centerSquare.size)
+            
+            scene.scaleMode = .aspectFit
+            view.presentScene(scene)
+            
+            view.backgroundColor = .white
             
             view.ignoresSiblingOrder = true
             
@@ -38,7 +39,7 @@ class GameViewController: UIViewController {
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         if UIDevice.current.userInterfaceIdiom == .phone {
-            return .allButUpsideDown
+            return .portrait
         } else {
             return .all
         }
