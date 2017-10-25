@@ -167,11 +167,10 @@ extension Game {
             if to.wouldCompleteMühle(for: color, filledFrom: from) {
                 return 1
             }
-            if from.wouldCompleteMühle(for: color.opposite) {
-                return 2
-            }
-            if to.wouldCompleteMühle(for: color.opposite, filledFrom: from) {
-                return 3
+            if let num = from.newMühleInSteps(for: color.opposite) {
+                if num.row == .some(1) || num.column == .some(1) {
+                    return 2
+                }
             }
             return 10
         }

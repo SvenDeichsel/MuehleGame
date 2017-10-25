@@ -12,15 +12,37 @@ import Foundation
 
 class MuehleScene: SKScene {
     
-    var game: Game = Game(whiteType: RandomPlayer.self, blackType: RandomPlayer.self)
+    let game: Game
     
     var fieldNodes: [StoneNode]
     
     var outlineNodes: [SKShapeNode]
     
-    override init(size: CGSize) {
-        let length = min(size.width, size.height)
+    var stoneRadius: CGFloat
+    var center: CGPoint
+    var lineWidth: CGFloat
+    
+    var movingNode: StoneNode? = nil
+    var fromNode: StoneNode? = nil
+    
+    weak var informUserDelegate: InformUserDelegate?
+    
+    var playingColor: Game.Color? = nil
+    var possibleMoves: Game.PossibleMove? = nil
+    var chosenMove: Game.Move? = nil
+    let choosingSemaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
+    
+    override convenience init(size: CGSize) {
+        let game = Game(whiteType: RandomPlayer.self, blackType: RandomPlayer.self)
+        self.init(game: game, size: size)
+    }
+    
+    init(game: Game, size: CGSize) {
+        self.game = game
+        
+        let length = min(size.width, size.height) - 16.0
         let stoneRadius = length / 20
+        self.stoneRadius = stoneRadius
         let stoneSize = CGSize(width: length/10, height: length/10)
         var all: [StoneNode] = []
         for field in game.fields {
@@ -29,11 +51,13 @@ class MuehleScene: SKScene {
         self.fieldNodes = all
         
         let center: CGPoint = CGPoint(x: size.width / 2, y: size.height / 2)
+        self.center = center
         let lineWidth = stoneRadius / 5
+        self.lineWidth = lineWidth
         
-        let outterRingNode = SKShapeNode(rectOf: CGSize(width: length - stoneRadius, height: length - stoneRadius))
-        let middleRingNode = SKShapeNode(rectOf: CGSize(width: length - stoneRadius * 4, height: length - stoneRadius * 4))
-        let innerRingNode = SKShapeNode(rectOf: CGSize(width: length - stoneRadius * 7, height: length - stoneRadius * 7))
+        let outterRingNode = SKShapeNode(rectOf: CGSize(width: length - stoneRadius * 2, height: length - stoneRadius * 2))
+        let middleRingNode = SKShapeNode(rectOf: CGSize(width: length - stoneRadius * 8, height: length - stoneRadius * 8))
+        let innerRingNode = SKShapeNode(rectOf: CGSize(width: length - stoneRadius * 14, height: length - stoneRadius * 14))
         
         let lineLength = stoneRadius * 6
         let upLine = SKShapeNode(rectOf: CGSize(width: lineWidth, height: lineLength))
@@ -45,7 +69,8 @@ class MuehleScene: SKScene {
         
         super.init(size: size)
         
-        self.backgroundColor = .white
+        self.game.delegate = self
+        self.backgroundColor = UIColor.lightGray
         
         for ringNode in [outterRingNode,middleRingNode,innerRingNode] {
             ringNode.lineWidth = lineWidth
@@ -57,18 +82,223 @@ class MuehleScene: SKScene {
         }
         for lineNode in [upLine,rightLine,downLine,leftLine] {
             lineNode.strokeColor = .black
+            lineNode.lineWidth = 0.0
             lineNode.fillColor = .black
             self.addChild(lineNode)
         }
         
-        upLine.position = CGPoint(x: center.x, y: stoneRadius * 4)
-        rightLine.position = CGPoint(x: stoneRadius * 16, y: center.y)
-        downLine.position = CGPoint(x: center.x, y: stoneRadius * 16)
-        leftLine.position = CGPoint(x: stoneRadius * 4, y: center.y)
+        upLine.position = CGPoint(x: center.x, y: stoneRadius * 4 + 8.0)
+        rightLine.position = CGPoint(x: stoneRadius * 16 + 8.0, y: center.y)
+        downLine.position = CGPoint(x: center.x, y: stoneRadius * 16 + 8.0)
+        leftLine.position = CGPoint(x: stoneRadius * 4 + 8.0, y: center.y)
         
+        for node in self.fieldNodes {
+            node.name = "Field Node"
+            self.addChild(node)
+            node.position = self.position(for: node.field)
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesBegan(touches, with: event)
+        
+        guard let possible = possibleMoves, let touch = touches.first else {
+            return
+        }
+        let loc = touch.location(in: self)
+        let nodes = self.nodes(at: loc).filter({ return $0.name == "Field Node" })
+        guard let node = nodes.first as? StoneNode, nodes.count == 1 else {
+            return
+        }
+        guard possible.contains(from: node.field) else {
+            return
+        }
+        node.fillColor = .lightGray
+        self.fromNode = node
+        
+        self.createMovingNode(at: loc, with: node.field)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesMoved(touches, with: event)
+        
+        guard let node = self.movingNode, let touch = touches.first else {
+            return
+        }
+        node.position = touch.location(in: self).offset(dx: -self.stoneRadius, dy: -self.stoneRadius)
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        
+        guard let possible = possibleMoves, let touch = touches.first else {
+            self.undoMoving()
+            return
+        }
+        let loc = touch.location(in: self)
+        let nodes = self.nodes(at: loc).filter({ return $0.name == "Field Node" })
+        guard let from = self.fromNode, let to = nodes.first as? StoneNode, nodes.count == 1 else {
+            self.undoMoving()
+            return
+        }
+        guard let move = possible.getMove(from: from.field, to: to.field) else {
+            self.undoMoving()
+            return
+        }
+        self.chosenMove = move
+        
+        self.removeMovingNode()
+        
+        self.choosingSemaphore.signal()
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesCancelled(touches, with: event)
+        
+        self.undoMoving()
+    }
+    
+    @discardableResult
+    func createMovingNode(at point: CGPoint, with: Field) -> StoneNode {
+        let node = StoneNode(field: with, size: CGSize(width: 2 * self.stoneRadius, height: 2 * self.stoneRadius))
+        if self.movingNode != nil {
+            self.removeMovingNode()
+        }
+        self.movingNode = node
+        self.addChild(node)
+        node.position = point
+        
+        return node
+    }
+    
+    func undoMoving() {
+        if let n = self.fromNode {
+            n.fillColor = n.field.color
+        }
+        removeMovingNode()
+    }
+    func removeMovingNode() {
+        guard let node = self.movingNode else {
+            return
+        }
+        node.removeFromParent()
+        self.movingNode = nil
+    }
+    
+    func position(for field: Field) -> CGPoint {
+        let row = CGFloat(6-field.row)
+        let column = CGFloat(field.column)
+        
+        return CGPoint(x: column * self.stoneRadius * 3 + 8.0, y: row * self.stoneRadius * 3 + 8.0)
+    }
+    
+    func moveStone(from: Field, to: Field) -> TimeInterval {
+        guard from != to else {
+            return 0.0
+        }
+        guard let fromNode = self.node(for: from), let toNode = self.node(for: to) else {
+                return 0.0
+        }
+        let distance = fromNode.position.distance(to: toNode.position)
+        let duration = TimeInterval(distance / self.frame.width * 2)
+        
+        let moveAction = SKAction.move(to: toNode.position, duration: duration)
+        
+        let moving = StoneNode(field: from, size: fromNode.frame.size)
+        moving.fillColor = fromNode.fillColor
+        self.addChild(moving)
+        self.movingNode = moving
+        
+        moving.position = fromNode.position
+        moving.run(moveAction) {
+            toNode.fillColor = to.color
+            moving.removeFromParent()
+            self.movingNode = nil
+        }
+        fromNode.fillColor = .clear
+        return duration
+    }
+    func refreshStone(at: Field) -> TimeInterval {
+        guard let node = self.node(for: at) else {
+            return 0.0
+        }
+        node.fillColor = at.color
+        return 0.0
+    }
+    
+    func node(for field: Field) -> StoneNode? {
+        return self.fieldNodes.first(where: { return $0.field == field })
+    }
+}
+
+extension MuehleScene: GameDelegate {
+    func moved(from: Field, to: Field) {
+        DispatchQueue.main.async {
+            self.node(for: from)?.fillColor = from.color
+            self.node(for: to)?.fillColor = to.color
+        }
+    }
+    func needsRefresh(at: Field) {
+        DispatchQueue.main.async {
+            self.node(for: at)?.fillColor = at.color
+        }
+    }
+    func move(from: Field, to: Field) -> TimeInterval {
+        return DispatchQueue.main.sync {
+            return self.moveStone(from: from, to: to)
+        }
+    }
+    func refresh(at: Field) -> TimeInterval {
+        return DispatchQueue.main.sync {
+            return self.refreshStone(at: at)
+        }
+    }
+}
+
+extension MuehleScene: Player {
+    func chooseMove(from possible: Game.PossibleMove, in game: Game) -> Game.Move? {
+        self.informUserDelegate?.new(moves: possible, for: self.playingColor ?? .white)
+        self.possibleMoves = possible
+        
+        var move: Game.Move?
+        while move == nil {
+            self.choosingSemaphore.wait()
+            move = self.chosenMove
+            self.chosenMove = nil
+        }
+        
+        self.possibleMoves = nil
+        
+        self.informUserDelegate?.moveEnded()
+        
+        return move
+    }
+    
+    func won(game: Game) {
+        print("Won :)")
+        self.informUserDelegate?.gameWon()
+    }
+    
+    func lost(game: Game) {
+        print("Lost :(")
+        self.informUserDelegate?.gameLost()
+    }
+    
+    func draw(game: Game) {
+        print("Draw")
+        self.informUserDelegate?.gameDraw()
+    }
+}
+
+protocol InformUserDelegate: class {
+    func new(moves: Game.PossibleMove, for color: Game.Color)
+    func moveEnded()
+    
+    func gameWon()
+    func gameLost()
+    func gameDraw()
 }

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" systemVersion="17A278a" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BV1-FR-VrT">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BV1-FR-VrT">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -9,16 +13,64 @@
         <!--Game View Controller-->
         <scene sceneID="tXr-a1-R10">
             <objects>
-                <viewController id="BV1-FR-VrT" customClass="GameViewController" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" multipleTouchEnabled="YES" contentMode="scaleToFill" id="3se-qz-xqx" customClass="SKView">
+                <viewController id="BV1-FR-VrT" customClass="GameViewController" customModule="MuehleGame" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" multipleTouchEnabled="YES" contentMode="scaleToFill" id="3se-qz-xqx">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="gAy-tV-xVT" customClass="SKView">
+                                <rect key="frame" x="0.0" y="156" width="375" height="375"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="gAy-tV-xVT" secondAttribute="height" multiplier="1:1" id="cgk-FI-uZq"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" text="Mühle" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fWe-dA-ymq">
+                                <rect key="frame" x="8" y="36" width="265" height="23"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="23" id="LMj-rg-joU"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="19"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uDj-4r-Jqh">
+                                <rect key="frame" x="329" y="32" width="38" height="30"/>
+                                <state key="normal" title="Black"/>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WGa-gW-R3a">
+                                <rect key="frame" x="281" y="32" width="40" height="30"/>
+                                <state key="normal" title="White"/>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="gAy-tV-xVT" firstAttribute="centerX" secondItem="4qk-I5-YsI" secondAttribute="centerX" id="2bl-YE-QLJ"/>
+                            <constraint firstItem="fWe-dA-ymq" firstAttribute="leading" secondItem="gAy-tV-xVT" secondAttribute="leading" constant="8" id="5PQ-JD-Ovk"/>
+                            <constraint firstItem="uDj-4r-Jqh" firstAttribute="leading" secondItem="WGa-gW-R3a" secondAttribute="trailing" constant="8" id="8AU-r4-E4W"/>
+                            <constraint firstItem="WGa-gW-R3a" firstAttribute="leading" secondItem="fWe-dA-ymq" secondAttribute="trailing" constant="8" id="8pI-nQ-984"/>
+                            <constraint firstItem="4qk-I5-YsI" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" priority="998" id="BBD-sP-F50"/>
+                            <constraint firstItem="uDj-4r-Jqh" firstAttribute="centerY" secondItem="fWe-dA-ymq" secondAttribute="centerY" id="H59-Z4-KSu"/>
+                            <constraint firstItem="gAy-tV-xVT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="fWe-dA-ymq" secondAttribute="bottom" constant="8" id="Lzn-rk-X3Z"/>
+                            <constraint firstItem="WGa-gW-R3a" firstAttribute="centerY" secondItem="fWe-dA-ymq" secondAttribute="centerY" id="Qr2-Yp-7gc"/>
+                            <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="gAy-tV-xVT" secondAttribute="bottom" constant="8" id="bsg-vf-IL8"/>
+                            <constraint firstItem="gAy-tV-xVT" firstAttribute="centerY" secondItem="4qk-I5-YsI" secondAttribute="centerY" id="ddN-4P-1W4"/>
+                            <constraint firstItem="uDj-4r-Jqh" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="dgL-xf-T7J"/>
+                            <constraint firstItem="gAy-tV-xVT" firstAttribute="leading" secondItem="4qk-I5-YsI" secondAttribute="leading" priority="998" id="oPx-Ca-5NX"/>
+                            <constraint firstItem="fWe-dA-ymq" firstAttribute="top" secondItem="4qk-I5-YsI" secondAttribute="top" constant="16" id="z5R-Rb-10n"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="4qk-I5-YsI"/>
                     </view>
+                    <connections>
+                        <outlet property="BlackButton" destination="uDj-4r-Jqh" id="ln9-6A-gdw"/>
+                        <outlet property="Label" destination="fWe-dA-ymq" id="OBX-2R-1fE"/>
+                        <outlet property="WhiteButton" destination="WGa-gW-R3a" id="wjM-Zc-T9g"/>
+                        <outlet property="gameView" destination="gAy-tV-xVT" id="q7S-2I-hYC"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="SZV-WD-TEh" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="-39.200000000000003" y="81.409295352323838"/>
         </scene>
     </scenes>
 </document>

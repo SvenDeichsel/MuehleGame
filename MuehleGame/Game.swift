@@ -11,6 +11,8 @@ import Foundation
 open class Game {
     let fields: [Field]
     
+    weak var delegate: GameDelegate?
+    
     public var fieldStates: [Field.State] {
         return self.fields.map({ return $0.state })
     }
@@ -33,8 +35,8 @@ open class Game {
         }
     }
     
-    public let whitePlayer: Player
-    public let blackPlayer: Player
+    public private(set) var whitePlayer: Player
+    public private(set) var blackPlayer: Player
     
     var history: [[Field.State]] = []
     
@@ -48,6 +50,10 @@ open class Game {
     }
     
     var leftPerlsToPlace: [Game.Color: Int] = [.white: 9, .black: 9]
+    
+    func numberOfLeftStones(for color: Game.Color) -> Int {
+        return self.leftPerlsToPlace[color] ?? 0
+    }
     
     var emptyFields: [Field] {
         return self.fields.filter({ return $0.state == .empty })
@@ -87,6 +93,15 @@ open class Game {
     }
     
     public let groups: [FieldGroup]
+    
+    func changePlayer(for color: Game.Color, to: Player) {
+        switch color {
+        case .white:
+            self.whitePlayer = to
+        case .black:
+            self.blackPlayer = to
+        }
+    }
     
     public convenience init<White: InitializablePlayer, Black: InitializablePlayer>(whiteType: White.Type, blackType: Black.Type) {
         self.init(white: White(color: .white), black: Black(color: .black))
@@ -264,6 +279,7 @@ open class Game {
             self.log("No move performed")
             return nil
         }
+        self.informDelegate(of: move, by: player)
         for other in result.nextPhase {
             guard (self.perform(phase: other, for: player) != nil) else {
                 return nil
@@ -275,10 +291,40 @@ open class Game {
     public func resetBoard() {
         self.log = ""
         for field in self.fields {
+            guard field.state != .empty else { continue }
             field.state = .empty
+            self.delegate?.needsRefresh(at: field)
         }
         self.leftPerlsToPlace = [.white: 9, .black: 9]
         self.history = []
+    }
+}
+
+extension Game {
+    func informDelegate(of move: Move, by player: Player) {
+        guard let d = self.delegate else { return }
+        switch move {
+        case let .place(in: f):
+            if player is MuehleScene {
+                d.needsRefresh(at: f)
+            } else {
+                _ = d.refresh(at: f)
+            }
+        case let .remove(f):
+            if player is MuehleScene {
+                d.needsRefresh(at: f)
+            } else {
+                let sec = d.refresh(at: f)
+                sleep(UInt32(sec) + 1)
+            }
+        case let .move(from: from, to: to):
+            if player is MuehleScene {
+                d.moved(from: from, to: to)
+            } else {
+                let sec = d.move(from: from, to: to)
+                sleep(UInt32(sec) + 1)
+            }
+        }
     }
 }
 
@@ -374,6 +420,61 @@ extension Game {
                 return !all.isEmpty
             case .noMove:
                 return false
+            }
+        }
+        public func contains(from: Field) -> Bool {
+            switch self {
+            case .place(inEither: let all):
+                return all.contains(from)
+            case .move(let all):
+                return all.contains(where: { return $0.from == from })
+            case .remove(either: let all):
+                return all.contains(from)
+            case .noMove:
+                return false
+            }
+        }
+        public func contains(to: Field, with from: Field) -> Bool {
+            switch self {
+            case .place(inEither: let all):
+                return all.contains(to)
+            case .move(let all):
+                return all.first(where: { return $0.from == from })?.to.contains(to) ?? false
+            case .remove(either: let all):
+                return all.contains(to)
+            case .noMove:
+                return false
+            }
+        }
+        
+        public func getMove(from: Field, to: Field) -> Game.Move? {
+            switch self {
+            case .place(inEither: let all):
+                guard from == to else {
+                    return nil
+                }
+                guard all.contains(from) else {
+                    return nil
+                }
+                return Game.Move.place(in: from)
+            case .move(let all):
+                guard from != to else {
+                    return nil
+                }
+                guard all.first(where: { return $0.from == from })?.to.contains(to) ?? false else {
+                    return nil
+                }
+                return Game.Move.move(from: from, to: to)
+            case .remove(either: let all):
+                guard from == to else {
+                    return nil
+                }
+                guard all.contains(from) else {
+                    return nil
+                }
+                return Game.Move.remove(from)
+            case .noMove:
+                return nil
             }
         }
     }

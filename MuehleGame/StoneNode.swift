@@ -27,6 +27,7 @@ class StoneNode: SKShapeNode {
         super.init()
         self.path = CGPath(roundedRect: CGRect(origin: .zero, size: size), cornerWidth: size.width / 2, cornerHeight: size.height / 2, transform: nil)
         self.fillColor = color
+        self.lineWidth = 0.0
     }
     
     required init?(coder aDecoder: NSCoder) {
