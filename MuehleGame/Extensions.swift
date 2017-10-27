@@ -60,6 +60,23 @@ extension Array {
         }
         return self[(self.count - n)...]
     }
+    public func first(_ n: Int) -> Array<Element> {
+        var arr: [Element] = []
+        for i in 0..<n {
+            if i < self.count {
+                arr.append(self[i])
+            } else {
+                break
+            }
+        }
+        return arr
+    }
+}
+
+extension Array where Element == Field {
+    func asMuehleFields() -> [Game.MuehleField] {
+        return self.map({ return Game.MuehleField(field: $0) })
+    }
 }
 
 extension Array where Element == Field.State {
@@ -69,7 +86,11 @@ extension Array where Element == Field.State {
             case .empty:
                 return 0.0
             case .filled(color: let c):
-                return c.floatValue(with: ownColor)
+                if c == ownColor {
+                    return 1.0
+                } else {
+                    return -1.0
+                }
             }
         })
     }

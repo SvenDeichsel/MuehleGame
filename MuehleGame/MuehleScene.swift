@@ -11,22 +11,30 @@ import GameKit
 import Foundation
 
 class MuehleScene: SKScene {
-    
+    /// Das Mühlespiel, welches gespielt wird
     let game: Game
     
+    /// Die Felder
     var fieldNodes: [StoneNode]
     
+    /// Die Spielfeldlinien
     var outlineNodes: [SKShapeNode]
     
+    /// Der Radius für die Spielsteine
     var stoneRadius: CGFloat
+    /// Das Centrum des Spielfeldes
     var center: CGPoint
+    /// Die Linienbreite
     var lineWidth: CGFloat
     
+    /// Der Spielstein, der vom Spieler bewegt wird
     var movingNode: StoneNode? = nil
+    /// Der Ursprungsspielstein, von dem ein Stein bewegt wurde
     var fromNode: StoneNode? = nil
     
     weak var informUserDelegate: InformUserDelegate?
     
+    // Mit den folgenden Variablen wird das Spielen ermöglicht
     var playingColor: Game.Color? = nil
     var possibleMoves: Game.PossibleMove? = nil
     var chosenMove: Game.Move? = nil
@@ -40,13 +48,14 @@ class MuehleScene: SKScene {
     init(game: Game, size: CGSize) {
         self.game = game
         
+        // Spiel setup
         let length = min(size.width, size.height) - 16.0
         let stoneRadius = length / 20
         self.stoneRadius = stoneRadius
         let stoneSize = CGSize(width: length/10, height: length/10)
         var all: [StoneNode] = []
         for field in game.fields {
-            all.append(StoneNode.init(field: field, size: stoneSize))
+            all.append(StoneNode(field: field, size: stoneSize))
         }
         self.fieldNodes = all
         
@@ -103,6 +112,7 @@ class MuehleScene: SKScene {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // Ermöglicht das bewegen, setzen und entfernen von Spielsteinen
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
         
@@ -114,7 +124,7 @@ class MuehleScene: SKScene {
         guard let node = nodes.first as? StoneNode, nodes.count == 1 else {
             return
         }
-        guard possible.contains(from: node.field) else {
+        guard possible.contains(from: Game.MuehleField(field: node.field)) else {
             return
         }
         node.fillColor = .lightGray
@@ -145,7 +155,7 @@ class MuehleScene: SKScene {
             self.undoMoving()
             return
         }
-        guard let move = possible.getMove(from: from.field, to: to.field) else {
+        guard let move = possible.getMove(from: Game.MuehleField(field: from.field), to: Game.MuehleField(field: to.field)) else {
             self.undoMoving()
             return
         }
@@ -196,6 +206,7 @@ class MuehleScene: SKScene {
         return CGPoint(x: column * self.stoneRadius * 3 + 8.0, y: row * self.stoneRadius * 3 + 8.0)
     }
     
+    /// Bewegt einen Stein in dem zurückgegebenen Zeitintervall
     func moveStone(from: Field, to: Field) -> TimeInterval {
         guard from != to else {
             return 0.0
@@ -222,6 +233,7 @@ class MuehleScene: SKScene {
         fromNode.fillColor = .clear
         return duration
     }
+    /// Aktualisiert den Stein
     func refreshStone(at: Field) -> TimeInterval {
         guard let node = self.node(for: at) else {
             return 0.0
@@ -229,12 +241,14 @@ class MuehleScene: SKScene {
         node.fillColor = at.color
         return 0.0
     }
-    
+    /// Gibt den graphischen Spielstein für einen Spielstein zurück
     func node(for field: Field) -> StoneNode? {
-        return self.fieldNodes.first(where: { return $0.field == field })
+        return self.fieldNodes[field.id]
+        //return self.fieldNodes.first(where: { return $0.field == field })
     }
 }
 
+// Aktualisiert das Spielbrett für die Computergesteuerten Züge
 extension MuehleScene: GameDelegate {
     func moved(from: Field, to: Field) {
         DispatchQueue.main.async {
@@ -259,9 +273,10 @@ extension MuehleScene: GameDelegate {
     }
 }
 
+// Sorgt dafür, dass der Nutzer, mit der graphischen Oberfläche spielen kann.
 extension MuehleScene: Player {
-    func chooseMove(from possible: Game.PossibleMove, in game: Game) -> Game.Move? {
-        self.informUserDelegate?.new(moves: possible, for: self.playingColor ?? .white)
+    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, in game: Game) -> Game.Move? {
+        self.informUserDelegate?.new(moves: possible)
         self.possibleMoves = possible
         
         var move: Game.Move?
@@ -294,8 +309,9 @@ extension MuehleScene: Player {
     }
 }
 
+// Gibt Spielphasen an den Nutzer weiter
 protocol InformUserDelegate: class {
-    func new(moves: Game.PossibleMove, for color: Game.Color)
+    func new(moves: Game.PossibleMove)
     func moveEnded()
     
     func gameWon()

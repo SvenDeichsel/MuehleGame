@@ -8,20 +8,25 @@
 
 import Foundation
 
+/// Eine Gruppe von Feldern, welche zusammen eine Mühle bilden könnten
 public class FieldGroup {
+    /// Alle Felder in dieser Gruppe
     public let all: [Field]
+    /// Der Gruppentype (Zeile oder Spalte)
     public let type: GroupType
     
+    /// Enthählt eine Mühle
     public var isMühle: Bool {
         return self.all.only(same: { return $0.state })
     }
-    
+    /// Alle leeren Felder
     var empty: [Field] {
         return self.all.filter({ return $0.state == .empty })
     }
-    
+    /// Der Unterscheid zwischen benachbarten Feldern
     let jumpSize: Int
     
+    /// Die Anzahl an Feldern mit einer bestimmten Farbe
     func numberOfFields(for color: Game.Color) -> Int {
         var num = 0
         for field in self.all {
@@ -32,6 +37,7 @@ public class FieldGroup {
         return num
     }
     
+    /// Andere Gruppen
     var relatedGroups: [FieldGroup]
     
     init(fields: [Field], type: GroupType) {
@@ -66,7 +72,7 @@ public class FieldGroup {
             }
         }
     }
-    
+    /// Die Farbe der Mühle in der Gruppe
     func muhle() -> Game.Color? {
         guard let firstColor = self.all.first?.state.color else { return nil }
         for field in all {
@@ -77,6 +83,7 @@ public class FieldGroup {
         }
         return firstColor
     }
+    /// Die Anzahl der benötigten Schritte, um eine Mühle mit der Farbe zu erzeugen
     func numStepsToMühle(for color: Game.Color) -> Int? {
         let allFieldsToFill = self.all.filter({ return $0.state != Field.State.filled(color: color) })
         var total = 0
@@ -108,6 +115,11 @@ extension FieldGroup: Equatable {
 }
 
 extension FieldGroup {
+    
+    /// Der Gruppentype
+    ///
+    /// - row: Zeile
+    /// - column: Spalte
     public enum GroupType: Equatable {
         case row
         case column

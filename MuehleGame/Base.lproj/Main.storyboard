@@ -42,6 +42,19 @@
                                 <rect key="frame" x="281" y="32" width="40" height="30"/>
                                 <state key="normal" title="White"/>
                             </button>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="xtn-26-5km">
+                                <rect key="frame" x="85.5" y="623" width="99" height="29"/>
+                                <segments>
+                                    <segment title="Zufall"/>
+                                    <segment title="Mittel"/>
+                                </segments>
+                            </segmentedControl>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Gegner:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gso-jU-CcO">
+                                <rect key="frame" x="8" y="626.5" width="61.5" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -52,11 +65,16 @@
                             <constraint firstItem="4qk-I5-YsI" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" priority="998" id="BBD-sP-F50"/>
                             <constraint firstItem="uDj-4r-Jqh" firstAttribute="centerY" secondItem="fWe-dA-ymq" secondAttribute="centerY" id="H59-Z4-KSu"/>
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="fWe-dA-ymq" secondAttribute="bottom" constant="8" id="Lzn-rk-X3Z"/>
+                            <constraint firstItem="gso-jU-CcO" firstAttribute="centerY" secondItem="xtn-26-5km" secondAttribute="centerY" id="N9o-Jo-qhb"/>
                             <constraint firstItem="WGa-gW-R3a" firstAttribute="centerY" secondItem="fWe-dA-ymq" secondAttribute="centerY" id="Qr2-Yp-7gc"/>
+                            <constraint firstItem="xtn-26-5km" firstAttribute="leading" secondItem="gso-jU-CcO" secondAttribute="trailing" constant="16" id="bpT-3j-8vP"/>
                             <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="gAy-tV-xVT" secondAttribute="bottom" constant="8" id="bsg-vf-IL8"/>
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="centerY" secondItem="4qk-I5-YsI" secondAttribute="centerY" id="ddN-4P-1W4"/>
                             <constraint firstItem="uDj-4r-Jqh" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="dgL-xf-T7J"/>
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="leading" secondItem="4qk-I5-YsI" secondAttribute="leading" priority="998" id="oPx-Ca-5NX"/>
+                            <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" secondItem="xtn-26-5km" secondAttribute="bottom" constant="16" id="pga-Fx-l8f"/>
+                            <constraint firstItem="xtn-26-5km" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="w1X-AX-oQE"/>
+                            <constraint firstItem="gso-jU-CcO" firstAttribute="leading" secondItem="gAy-tV-xVT" secondAttribute="leading" constant="8" id="wbN-lF-ZkO"/>
                             <constraint firstItem="fWe-dA-ymq" firstAttribute="top" secondItem="4qk-I5-YsI" secondAttribute="top" constant="16" id="z5R-Rb-10n"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="4qk-I5-YsI"/>
@@ -64,6 +82,8 @@
                     <connections>
                         <outlet property="BlackButton" destination="uDj-4r-Jqh" id="ln9-6A-gdw"/>
                         <outlet property="Label" destination="fWe-dA-ymq" id="OBX-2R-1fE"/>
+                        <outlet property="OpponentLabel" destination="gso-jU-CcO" id="9gS-bq-vFf"/>
+                        <outlet property="OpponentSegment" destination="xtn-26-5km" id="FJi-UA-kYO"/>
                         <outlet property="WhiteButton" destination="WGa-gW-R3a" id="wjM-Zc-T9g"/>
                         <outlet property="gameView" destination="gAy-tV-xVT" id="q7S-2I-hYC"/>
                     </connections>

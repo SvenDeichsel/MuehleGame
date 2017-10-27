@@ -18,10 +18,20 @@ class GameViewController: UIViewController {
     @IBOutlet weak var WhiteButton: UIButton!
     @IBOutlet weak var BlackButton: UIButton!
     
+    @IBOutlet weak var OpponentLabel: UILabel!
+    @IBOutlet weak var OpponentSegment: UISegmentedControl!
+    
     var game: Game!
+    var playingColor: Game.Color = .white
+    
     weak var scene: MuehleScene?
     
-    let gameQueue: DispatchQueue = DispatchQueue.global(qos: .userInteractive)
+    /// The queue on which the game is played
+    let gameQueue: DispatchQueue = {() -> DispatchQueue in
+        let queue = DispatchQueue.init(label: "GameQueue", qos: DispatchQoS.userInteractive, attributes: [])
+        
+        return queue
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,13 +68,15 @@ class GameViewController: UIViewController {
         self.gameQueue.async {
             guard let scene = self.scene else { return }
             self.game.changePlayer(for: .white, to: scene)
-            self.game.changePlayer(for: .black, to: SmartPlayer(color: .black))
+            self.playingColor = .white
+            scene.playingColor = .white
+            self.game.changePlayer(for: .black, to: self.createOpponent(for: .black))
             
             DispatchQueue.main.async {
                 self.disableButtons()
             }
         }
-        gameQueue.async {
+        self.gameQueue.async {
             self.game.resetBoard()
             self.game.play()
         }
@@ -73,24 +85,42 @@ class GameViewController: UIViewController {
         self.gameQueue.async {
             guard let scene = self.scene else { return }
             self.game.changePlayer(for: .black, to: scene)
-            self.game.changePlayer(for: .white, to: SmartPlayer(color: .white))
+            self.playingColor = .black
+            scene.playingColor = .black
+            self.game.changePlayer(for: .white, to: self.createOpponent(for: .white))
             
             DispatchQueue.main.async {
                 self.disableButtons()
             }
         }
-        gameQueue.async {
+        self.gameQueue.async {
+            self.game.resetBoard()
             self.game.play()
+        }
+    }
+    
+    func createOpponent(for color: Game.Color) -> Player {
+        return DispatchQueue.main.sync {() -> Player in
+            switch self.OpponentSegment.selectedSegmentIndex {
+            case 0:
+                return RandomPlayer(color: color)
+            default:
+                return SmartPlayer(color: color)
+            }
         }
     }
     
     func disableButtons() {
         self.WhiteButton.isEnabled = false
         self.BlackButton.isEnabled = false
+        
+        self.OpponentSegment.isEnabled = false
     }
     func enableButtons() {
         self.WhiteButton.isEnabled = true
         self.BlackButton.isEnabled = true
+        
+        self.OpponentSegment.isEnabled = true
     }
     
     override var shouldAutorotate: Bool {
@@ -116,15 +146,15 @@ class GameViewController: UIViewController {
 }
 
 extension GameViewController: InformUserDelegate {
-    func new(moves: Game.PossibleMove, for color: Game.Color) {
+    func new(moves: Game.PossibleMove) {
         switch moves {
         case .move(_):
             DispatchQueue.main.async {
                 self.Label.text = "Move a stone"
             }
-        case .place(inEither: _):
+        case .place(inEither: _, left: let num):
             DispatchQueue.main.async {
-                self.Label.text = "Place a stone (Left: \(self.game.numberOfLeftStones(for: color)))"
+                self.Label.text = "Place a stone (Left: \(num))"
             }
         case .remove(either: _):
             DispatchQueue.main.async {
