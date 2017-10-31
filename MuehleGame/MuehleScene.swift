@@ -12,7 +12,7 @@ import Foundation
 
 class MuehleScene: SKScene {
     /// Das Mühlespiel, welches gespielt wird
-    let game: Game
+    var game: Game
     
     /// Die Felder
     var fieldNodes: [StoneNode]
@@ -139,7 +139,6 @@ class MuehleScene: SKScene {
         
         if case Game.PossibleMove.move(_) = possible {
             node.fillColor = .clear
-            
             self.createMovingNode(at: loc, with: node.field)
         }
     }
@@ -193,6 +192,7 @@ class MuehleScene: SKScene {
         self.movingNode = node
         self.addChild(node)
         node.position = point
+        node.fillColor = with.color
         
         return node
     }

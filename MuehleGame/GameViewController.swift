@@ -59,8 +59,15 @@ class GameViewController: UIViewController {
         self.gameView.showsNodeCount = true
         */
         
+        self.Label.text = NSLocalizedString("Muehle", comment: "")
+        
+        self.WhiteButton.setTitle(NSLocalizedString("White", comment: ""), for: .normal)
         self.WhiteButton.addTarget(self, action: #selector(GameViewController.didSelectWhite), for: .touchUpInside)
+        
+        self.BlackButton.setTitle(NSLocalizedString("Black", comment: ""), for: .normal)
         self.BlackButton.addTarget(self, action: #selector(GameViewController.didSelectBlack), for: .touchUpInside)
+        
+        self.NewGameButton.setTitle(NSLocalizedString("GiveUp", comment: ""), for: .normal)
         self.NewGameButton.addTarget(self, action: #selector(GameViewController.newGame), for: .touchUpInside)
         
         self.NewGameButton.isEnabled = false
@@ -70,24 +77,20 @@ class GameViewController: UIViewController {
         super.viewDidAppear(animated)
         
         if let data = UserDefaults.standard.data(forKey: "Game") {
-            do {
-                let old = try Game.unarchived(from: data, with: {
-                    self.scene?.playingColor = $0
+            guard let scene = self.scene else { return }
+            self.gameQueue.async {
+                guard let phase = self.game.resetGame(from: data, with: {
+                    scene.playingColor = $0
                     self.playingColor = $0
-                    return self.scene!
-                })
-                self.game = old.game
-                old.game.delegate = self.scene
-                
-                self.disableButtons()
-                self.gameQueue.async {
-                    for field in old.game.fields {
-                        self.scene?.needsRefresh(at: field)
-                    }
-                    self.game.play(start: old.phase)
+                    return scene
+                }) else { return }
+                DispatchQueue.main.async {
+                    self.disableButtons()
                 }
-            } catch {
-                print(error)
+                for field in self.game.fields {
+                    scene.needsRefresh(at: field)
+                }
+                self.game.play(start: phase)
             }
         }
     }
@@ -195,19 +198,19 @@ extension GameViewController: InformUserDelegate {
         switch moves {
         case .move(_):
             DispatchQueue.main.async {
-                self.Label.text = "Move a stone"
+                self.Label.text = NSLocalizedString("MoveStone", comment: "")
             }
         case .place(inEither: _, left: let num):
             DispatchQueue.main.async {
-                self.Label.text = "Place a stone (Left: \(num))"
+                self.Label.text = String.init(format: NSLocalizedString("PlaceStone", comment: ""), "\(num)")
             }
         case .remove(either: _):
             DispatchQueue.main.async {
-                self.Label.text = "Remove a stone"
+                self.Label.text = NSLocalizedString("RemoveStone", comment: "")
             }
         case .noMove:
             DispatchQueue.main.async {
-                self.Label.text = "No moves available"
+                self.Label.text = NSLocalizedString("NoMoves", comment: "")
             }
         }
         DispatchQueue.global(qos: .background).async {
@@ -222,24 +225,24 @@ extension GameViewController: InformUserDelegate {
     }
     func moveEnded() {
         DispatchQueue.main.async {
-            self.Label.text = "Mühle"
+            self.Label.text = NSLocalizedString("Muehle", comment: "")
         }
     }
     func gameWon() {
         DispatchQueue.main.async {
-            self.Label.text = "You won!"
+            self.Label.text = NSLocalizedString("YouWon", comment: "")
             self.enableButtons()
         }
     }
     func gameLost() {
         DispatchQueue.main.async {
-            self.Label.text = "You lost!"
+            self.Label.text = NSLocalizedString("YouLoose", comment: "")
             self.enableButtons()
         }
     }
     func gameDraw() {
         DispatchQueue.main.async {
-            self.Label.text = "Game was a draw."
+            self.Label.text = NSLocalizedString("Draw", comment: "")
             self.enableButtons()
         }
     }

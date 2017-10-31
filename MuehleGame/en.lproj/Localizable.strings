@@ -1,0 +1,25 @@
+/* 
+  Localizable.strings
+  MuehleGame
+
+  Created by Sven Deichsel on 31.10.17.
+  Copyright © 2017 Sven Deichsel. All rights reserved.
+*/
+
+Muehle = "Checkers";
+White = "White";
+Black = "Black";
+Opponent = "Opponent";
+Random = "Random";
+Medium = "Medium";
+Hard = "Hard";
+GiveUp = "Give up";
+
+YouWon = "You won :)";
+YouLoose = "You loose :(";
+Draw = "Game was a draw";
+
+MoveStone = "Move a stone";
+PlaceStone = "Place a stone (Left: %@)";
+RemoveStone = "Remove a stone";
+NoMoves = "No moves available";

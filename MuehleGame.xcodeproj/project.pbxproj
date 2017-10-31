@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC51A0FF1FA90414003EBF52 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DC51A1011FA90414003EBF52 /* Localizable.strings */; };
 		DCF5524F1FA0B9F3000A37AC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF5524E1FA0B9F3000A37AC /* AppDelegate.swift */; };
 		DCF552571FA0B9F3000A37AC /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF552561FA0B9F3000A37AC /* GameViewController.swift */; };
 		DCF5525A1FA0B9F3000A37AC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DCF552581FA0B9F3000A37AC /* Main.storyboard */; };
@@ -27,6 +28,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		DC51A1001FA90414003EBF52 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		DC51A1021FA90420003EBF52 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DCF5524B1FA0B9F3000A37AC /* MuehleGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MuehleGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCF5524E1FA0B9F3000A37AC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DCF552561FA0B9F3000A37AC /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
@@ -79,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				DCF5524E1FA0B9F3000A37AC /* AppDelegate.swift */,
+				DC51A1011FA90414003EBF52 /* Localizable.strings */,
 				DCF552561FA0B9F3000A37AC /* GameViewController.swift */,
 				DCF552661FA0BA35000A37AC /* MuehleScene.swift */,
 				DCF5527B1FA0C42D000A37AC /* UIExtensions.swift */,
@@ -151,6 +155,7 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
 			);
 			mainGroup = DCF552421FA0B9F3000A37AC;
 			productRefGroup = DCF5524C1FA0B9F3000A37AC /* Products */;
@@ -168,6 +173,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCF5525A1FA0B9F3000A37AC /* Main.storyboard in Resources */,
+				DC51A0FF1FA90414003EBF52 /* Localizable.strings in Resources */,
 				DCF5525C1FA0B9F3000A37AC /* Assets.xcassets in Resources */,
 				DCF5525F1FA0B9F3000A37AC /* LaunchScreen.storyboard in Resources */,
 			);
@@ -200,6 +206,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		DC51A1011FA90414003EBF52 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DC51A1001FA90414003EBF52 /* en */,
+				DC51A1021FA90420003EBF52 /* de */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 		DCF552581FA0B9F3000A37AC /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -223,6 +238,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -280,6 +296,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

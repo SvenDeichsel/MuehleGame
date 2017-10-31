@@ -27,9 +27,6 @@
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="249" text="Mühle" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fWe-dA-ymq">
                                 <rect key="frame" x="8" y="36" width="265" height="23"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="23" id="LMj-rg-joU"/>
-                                </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="19"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -43,7 +40,7 @@
                                 <state key="normal" title="White"/>
                             </button>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="2" translatesAutoresizingMaskIntoConstraints="NO" id="xtn-26-5km">
-                                <rect key="frame" x="85.5" y="623" width="179" height="29"/>
+                                <rect key="frame" x="73.5" y="623" width="179" height="29"/>
                                 <segments>
                                     <segment title="Zufall"/>
                                     <segment title="Mittel"/>
@@ -59,7 +56,6 @@
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1VQ-wN-aw9">
                                 <rect key="frame" x="296" y="622" width="71" height="30"/>
                                 <state key="normal" title="NewGame"/>
-                                <state key="disabled" title="New Game"/>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -75,7 +71,7 @@
                             <constraint firstItem="gso-jU-CcO" firstAttribute="centerY" secondItem="xtn-26-5km" secondAttribute="centerY" id="N9o-Jo-qhb"/>
                             <constraint firstItem="WGa-gW-R3a" firstAttribute="centerY" secondItem="fWe-dA-ymq" secondAttribute="centerY" id="Qr2-Yp-7gc"/>
                             <constraint firstItem="1VQ-wN-aw9" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="VA5-Hg-0UK"/>
-                            <constraint firstItem="xtn-26-5km" firstAttribute="leading" secondItem="gso-jU-CcO" secondAttribute="trailing" constant="16" id="bpT-3j-8vP"/>
+                            <constraint firstItem="xtn-26-5km" firstAttribute="leading" secondItem="gso-jU-CcO" secondAttribute="trailing" constant="4" id="bpT-3j-8vP"/>
                             <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="gAy-tV-xVT" secondAttribute="bottom" constant="8" id="bsg-vf-IL8"/>
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="centerY" secondItem="4qk-I5-YsI" secondAttribute="centerY" id="ddN-4P-1W4"/>
                             <constraint firstItem="uDj-4r-Jqh" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="dgL-xf-T7J"/>

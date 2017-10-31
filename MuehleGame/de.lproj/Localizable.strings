@@ -1,0 +1,26 @@
+/* 
+  Localizable.strings
+  MuehleGame
+
+  Created by Sven Deichsel on 31.10.17.
+  Copyright © 2017 Sven Deichsel. All rights reserved.
+*/
+
+
+Muehle = "Mühle";
+White = "Weiß";
+Black = "Schwarz";
+Opponent = "Gegner";
+Random = "Zufall";
+Medium = "Mittel";
+Hard = "Schwer";
+GiveUp = "Aufgeben";
+
+YouWin = "Du hast gewonnen :)";
+YouLoose = "Du hast verloren :(";
+Draw = "Spiel endet unentschieden";
+
+MoveStone = "Bewege einen Stein";
+PlaceStone = "Setze einen Stein (Übrig: %@)";
+RemoveStone = "Entferne einen Stein";
+NoMoves = "Keine Züge mehr möglich";

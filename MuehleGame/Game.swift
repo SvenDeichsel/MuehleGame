@@ -1035,6 +1035,29 @@ extension Game: Encodable {
         return try Game.game(from: value, with: scene)
     }
     
+    func resetGame(from data: Data, with scene: (Game.Color) -> MuehleScene) -> Game.Phase? {
+        do {
+            let decoder = JSONDecoder()
+            
+            let value = try decoder.decode(DecodableGame.self, from: data)
+            
+            let white = value.whiteType.player(color: .white, scene: scene)
+            self.changePlayer(for: .white, to: white)
+            let black = value.blackType.player(color: .black, scene: scene)
+            self.changePlayer(for: .black, to: black)
+            
+            guard self.fields.count == value.states.count else {
+                return nil
+            }
+            for i in 0..<self.fields.count {
+                self.fields[i].state = value.states[i]
+            }
+            return value.phase
+        } catch {
+            print(error)
+            return nil
+        }
+    }
     static func game(from decodable: DecodableGame, with scene: (Game.Color) -> MuehleScene) throws -> (phase: Game.Phase, game: Game) {
         let white = decodable.whiteType.player(color: Game.Color.white, scene: scene)
         let black = decodable.blackType.player(color: Game.Color.black, scene: scene)
