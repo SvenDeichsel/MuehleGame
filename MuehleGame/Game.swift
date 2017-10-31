@@ -125,6 +125,10 @@ open class Game {
     /// Alle Feldgruppen dieses Spiels
     public let groups: [FieldGroup]
     
+    
+    // MARK: - Current game play
+    public var currentPhase: Game.Phase?
+    
     //MARK: - Initializers
     
     /// Erstellt ein Spiel mit den gegebenen Player-Typen
@@ -232,73 +236,64 @@ open class Game {
     /// - WARNING: Muss auf einem Hintergrundthread aufgerufen werden, da diese Funktion erst zurückkehrt, wenn das Spiel beendet wurde.
     /// - Returns: Den Gewinner, falls es einen gab.
     @discardableResult
-    public func play() -> Game.Color? {
+    public func play(start: Game.Phase? = nil) -> Game.Color? {
         var count = 1
-        var phase: Phase = Phase.placing(as: .white, leftStones: (9,9))
-        //let semaphore = DispatchSemaphore.init(value: 0)
+        var phase: Phase = start ?? Phase.placing(as: .white, leftStones: (9,9))
+        self.currentPhase = phase
+        
+        var lastMühleClosedAt: Int = 1
+        var mühlenWhite = self.numMühlen(for: .white)
+        var mühlenBlack = self.numMühlen(for: .black)
+        
         while let color = phase.playingColor() {
             if self.loggingEnabled {
                 self.log("Round \(count)\nPlayer: \(color)")
                 self.log(self.description)
             }
-            //_ = semaphore.wait(timeout: .now() + .seconds(3))
             if self.keepHistory {
                 self.history.append(self.fields.map({ $0.state }))
             }
             guard let next = self.perform(phase: phase, for: self.player(for: color)) else {
-                return nil
+                phase = .winner(color.opposite)
+                break
             }
             
             phase = next
+            self.currentPhase = next
             count += 1
             
-            if count > 250 {
-                print("Draw because game didn't end.")
+            // Überprüfe, ob eine Mühle geschlossen wurde
+            let newWhite = self.numMühlen(for: .white)
+            if newWhite > mühlenWhite {
+                lastMühleClosedAt = count
+            }
+            mühlenWhite = newWhite
+            
+            let newBlack = self.numMühlen(for: .black)
+            if newBlack > mühlenBlack {
+                lastMühleClosedAt = count
+            }
+            mühlenBlack = newBlack
+            
+            // Beende das Spiel, wenn seit mehr als 50 Zügen keine Mühle geschlossen wurde
+            if count - lastMühleClosedAt > 50 {
+                print("Draw because no Mühle closed in over 75 moves")
                 print(self.description)
                 phase = .draw
                 break
             }
             /*
-            if count > 100 {
-                let last = history.last!
-                var lastInt = -1
-                var currentCount = 0
-                for h in history.last(n: 10).reversed() {
-                    if last == h {
-                        if lastInt == currentCount {
-                            break
-                        } else {
-                            lastInt = currentCount
-                        }
-                        currentCount = 0
-                    } else {
-                        currentCount += 1
-                    }
-                }
-                if lastInt < 10 && lastInt > 1 {
-                    let currentState = self.fields.map({ return $0.state })
-                    print("Repeating moves detected -> Game is a draw")
-                    var c = 1
-                    for h in history.last(n: lastInt * 3) {
-                        print("State \(c)")
-                        for (i,state) in h.enumerated() {
-                            self.fields[i].state = state
-                        }
-                        print(self.description)
-                        c += 1
-                    }
-                    for (i,state) in currentState.enumerated() {
-                        self.fields[i].state = state
-                    }
-                    print("Current State")
-                    print(self.description)
-                    
-                    phase = .draw
-                    break
-                }
+            if count > 300 {
+                print("Draw because game didn't end.")
+                print(self.description)
+                phase = .draw
+                break
             }
             */
         }
+        
+        self.currentPhase = nil
+        
         if self.loggingEnabled {
             self.log(self.description)
         }
@@ -325,6 +320,16 @@ open class Game {
             }
             return nil
         }
+    }
+    
+    func numMühlen(for color: Color) -> Int {
+        var num = 0
+        for group in groups {
+            if let c = group.muhle(), c == color {
+                num += 1
+            }
+        }
+        return num
     }
     
     /// Setzt das Spielfeld zurück, sodass ein weiteres Spiel gespielt werden kann.
@@ -642,7 +647,71 @@ extension Game {
             }
         }
     }
-    
+}
+
+extension Game.Phase: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case color
+        case leftStones
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        switch self {
+        case .draw:
+            try container.encode("D", forKey: .type)
+        case let .winner(c):
+            try container.encode("W", forKey: .type)
+            try container.encode(c, forKey: .color)
+        case let .moving(as: c):
+            try container.encode("M", forKey: .type)
+            try container.encode(c, forKey: .color)
+        case let .remove(as: c):
+            try container.encode("R", forKey: .type)
+            try container.encode(c, forKey: .color)
+        case let .jumping(for: c):
+            try container.encode("J", forKey: .type)
+            try container.encode(c, forKey: .color)
+        case let .placing(as: c, leftStones: left):
+            try container.encode("P", forKey: .type)
+            try container.encode(c, forKey: .color)
+            try container.encode(left.white*10+left.black, forKey: .leftStones)
+        }
+    }
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let t = try container.decode(String.self, forKey: .type)
+        
+        func color() throws -> Game.Color {
+            return try container.decode(Game.Color.self, forKey: .color)
+        }
+        
+        switch t {
+        case "D":
+            self = .draw
+        case "W":
+            self = .winner(try color())
+        case "M":
+            self = .moving(as: try color())
+        case "R":
+            self = .remove(as: try color())
+        case "J":
+            self = .jumping(for: try color())
+        case "P":
+            let left = try container.decode(Int.self, forKey: .leftStones)
+            self = .placing(as: try color(), leftStones: (white: left / 10, black: left % 10))
+        default:
+            throw PhaseError.wrongTypeIdentifier(t)
+        }
+    }
+    enum PhaseError: Error {
+        case wrongTypeIdentifier(String)
+    }
+}
+
+extension Game {
     /// Beschreibt alle möglichen Züge eines Spielers
     ///
     /// - place: Beschreibt Züge, bei denen der Spieler Steine setzen darf
@@ -847,6 +916,147 @@ extension Game {
     }
 }
 
+// MARK: Spiel speichern
+extension Game: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case states
+        case phase
+        case white
+        case black
+    }
+    enum PlayerType: RawRepresentable, Codable {
+        case smart(depth: Int)
+        case random
+        case user
+        case scene
+        
+        typealias RawValue = String
+        var rawValue: String {
+            switch self {
+            case let .smart(depth: d):
+                return "smart\(d)"
+            case .random:
+                return "random"
+            case .user:
+                return "user"
+            case .scene:
+                return "scene"
+            }
+        }
+        
+        init?(rawValue: String) {
+            switch rawValue {
+            case var str where str.hasPrefix("smart"):
+                str.removeSubrange(..<str.index(str.startIndex, offsetBy: 5))
+                guard let num = Int(str) else {
+                    return nil
+                }
+                self = .smart(depth: num)
+            case "random":
+                self = .random
+            case "user":
+                self = .user
+            case "scene":
+                self = .scene
+            default:
+                return nil
+            }
+        }
+        
+        init?(player: Player) {
+            switch player {
+            case _ as RandomPlayer:
+                self = .random
+            case _ as UserPlayer:
+                self = .user
+            case _ as MuehleScene:
+                self = .scene
+            case let p as SmartPlayer:
+                self = .smart(depth: p.levels)
+            default:
+                return nil
+            }
+        }
+        
+        func player(color: Game.Color, scene: (Game.Color) -> MuehleScene) -> Player {
+            switch self {
+            case .smart(depth: let d):
+                return SmartPlayer(color: color, numLevels: d)
+            case .random:
+                return RandomPlayer(color: color)
+            case .user:
+                return UserPlayer(color: color)
+            case .scene:
+                return scene(color)
+            }
+        }
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(self.fieldStates, forKey: .states)
+        
+        if self.currentPhase == nil {
+            print("No phase")
+        }
+        try container.encodeIfPresent(self.currentPhase, forKey: .phase)
+        
+        try container.encodeIfPresent(PlayerType(player: self.whitePlayer), forKey: .white)
+        try container.encodeIfPresent(PlayerType(player: self.blackPlayer), forKey: .black)
+    }
+    
+    struct DecodableGame: Decodable {
+        let states: [Field.State]
+        let phase: Game.Phase
+        let whiteType: PlayerType
+        let blackType: PlayerType
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            self.states = try container.decode([Field.State].self, forKey: .states)
+            self.phase = try container.decode(Game.Phase.self, forKey: .phase)
+            
+            self.whiteType = try container.decode(PlayerType.self, forKey: .white)
+            self.blackType = try container.decode(PlayerType.self, forKey: .black)
+        }
+    }
+    func archived() throws -> Data {
+        let encoder = JSONEncoder()
+        
+        return try encoder.encode(self)
+    }
+    static func unarchived(from data: Data, with scene: (Game.Color) -> MuehleScene) throws -> (phase: Game.Phase, game: Game) {
+        let decoder = JSONDecoder()
+        
+        let value = try decoder.decode(DecodableGame.self, from: data)
+        
+        
+        return try Game.game(from: value, with: scene)
+    }
+    
+    static func game(from decodable: DecodableGame, with scene: (Game.Color) -> MuehleScene) throws -> (phase: Game.Phase, game: Game) {
+        let white = decodable.whiteType.player(color: Game.Color.white, scene: scene)
+        let black = decodable.blackType.player(color: Game.Color.black, scene: scene)
+        
+        let game = Game(white: white, black: black)
+        
+        guard game.fields.count == decodable.states.count else {
+            throw GameDecodingError.wrongNumberOfStates
+        }
+        for i in 0..<game.fields.count {
+            game.fields[i].state = decodable.states[i]
+        }
+        
+        return (decodable.phase, game)
+    }
+    
+    enum GameDecodingError: Error {
+        case wrongNumberOfStates
+    }
+}
+
+// MARK: - Spiel ohne Ausgabe
 public class GameNoOutput: Game {
     public override var loggingEnabled: Bool {
         get {

@@ -303,3 +303,28 @@ extension Field {
         }
     }
 }
+
+extension Field.State: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case color
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        switch self {
+        case .empty:
+            try container.encodeNil(forKey: .color)
+        case .filled(color: let c):
+            try container.encode(c, forKey: .color)
+        }
+    }
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        if let color = try container.decodeIfPresent(Game.Color.self, forKey: .color) {
+            self = .filled(color: color)
+        } else {
+            self = .empty
+        }
+    }
+}

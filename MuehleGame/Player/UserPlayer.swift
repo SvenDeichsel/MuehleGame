@@ -18,7 +18,7 @@ class UserPlayer: Player {
         self.color = color
     }
     
-    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, in game: Game) -> Game.Move? {
+    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, previous: Game.Phase?, in game: Game) -> Game.Move? {
         print("Current game state")
         print(game.description)
         print("Choose a move (for: \(self.color.description))")

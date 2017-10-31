@@ -56,11 +56,17 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1VQ-wN-aw9">
+                                <rect key="frame" x="296" y="622" width="71" height="30"/>
+                                <state key="normal" title="NewGame"/>
+                                <state key="disabled" title="New Game"/>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.99999600649999998" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="centerX" secondItem="4qk-I5-YsI" secondAttribute="centerX" id="2bl-YE-QLJ"/>
                             <constraint firstItem="fWe-dA-ymq" firstAttribute="leading" secondItem="gAy-tV-xVT" secondAttribute="leading" constant="8" id="5PQ-JD-Ovk"/>
+                            <constraint firstItem="1VQ-wN-aw9" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="xtn-26-5km" secondAttribute="trailing" constant="8" id="6Q1-R6-ESX"/>
                             <constraint firstItem="uDj-4r-Jqh" firstAttribute="leading" secondItem="WGa-gW-R3a" secondAttribute="trailing" constant="8" id="8AU-r4-E4W"/>
                             <constraint firstItem="WGa-gW-R3a" firstAttribute="leading" secondItem="fWe-dA-ymq" secondAttribute="trailing" constant="8" id="8pI-nQ-984"/>
                             <constraint firstItem="4qk-I5-YsI" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" priority="998" id="BBD-sP-F50"/>
@@ -68,14 +74,15 @@
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="top" relation="greaterThanOrEqual" secondItem="fWe-dA-ymq" secondAttribute="bottom" constant="8" id="Lzn-rk-X3Z"/>
                             <constraint firstItem="gso-jU-CcO" firstAttribute="centerY" secondItem="xtn-26-5km" secondAttribute="centerY" id="N9o-Jo-qhb"/>
                             <constraint firstItem="WGa-gW-R3a" firstAttribute="centerY" secondItem="fWe-dA-ymq" secondAttribute="centerY" id="Qr2-Yp-7gc"/>
+                            <constraint firstItem="1VQ-wN-aw9" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="VA5-Hg-0UK"/>
                             <constraint firstItem="xtn-26-5km" firstAttribute="leading" secondItem="gso-jU-CcO" secondAttribute="trailing" constant="16" id="bpT-3j-8vP"/>
                             <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="gAy-tV-xVT" secondAttribute="bottom" constant="8" id="bsg-vf-IL8"/>
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="centerY" secondItem="4qk-I5-YsI" secondAttribute="centerY" id="ddN-4P-1W4"/>
                             <constraint firstItem="uDj-4r-Jqh" firstAttribute="trailing" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="dgL-xf-T7J"/>
                             <constraint firstItem="gAy-tV-xVT" firstAttribute="leading" secondItem="4qk-I5-YsI" secondAttribute="leading" priority="998" id="oPx-Ca-5NX"/>
                             <constraint firstItem="4qk-I5-YsI" firstAttribute="bottom" secondItem="xtn-26-5km" secondAttribute="bottom" constant="16" id="pga-Fx-l8f"/>
-                            <constraint firstItem="xtn-26-5km" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="gAy-tV-xVT" secondAttribute="trailing" constant="-8" id="w1X-AX-oQE"/>
                             <constraint firstItem="gso-jU-CcO" firstAttribute="leading" secondItem="gAy-tV-xVT" secondAttribute="leading" constant="8" id="wbN-lF-ZkO"/>
+                            <constraint firstItem="1VQ-wN-aw9" firstAttribute="centerY" secondItem="xtn-26-5km" secondAttribute="centerY" id="yJC-Jq-FMo"/>
                             <constraint firstItem="fWe-dA-ymq" firstAttribute="top" secondItem="4qk-I5-YsI" secondAttribute="top" constant="16" id="z5R-Rb-10n"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="4qk-I5-YsI"/>
@@ -83,6 +90,7 @@
                     <connections>
                         <outlet property="BlackButton" destination="uDj-4r-Jqh" id="ln9-6A-gdw"/>
                         <outlet property="Label" destination="fWe-dA-ymq" id="OBX-2R-1fE"/>
+                        <outlet property="NewGameButton" destination="1VQ-wN-aw9" id="TU1-ue-zIj"/>
                         <outlet property="OpponentLabel" destination="gso-jU-CcO" id="9gS-bq-vFf"/>
                         <outlet property="OpponentSegment" destination="xtn-26-5km" id="FJi-UA-kYO"/>
                         <outlet property="WhiteButton" destination="WGa-gW-R3a" id="wjM-Zc-T9g"/>

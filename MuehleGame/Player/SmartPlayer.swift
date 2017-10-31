@@ -17,7 +17,7 @@ open class SmartPlayer: InitializablePlayer {
     
     private let scorer: GameBoardScorer
     
-    private let levels: Int
+    public let levels: Int
     private var currentLevels: Int
     
     public required init(color: Game.Color) {
@@ -37,7 +37,7 @@ open class SmartPlayer: InitializablePlayer {
         self.currentLevels = numLevels
     }
     
-    public func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, in game: Game) -> Game.Move? {
+    public func setLevels(for phase: Game.Phase) {
         switch phase {
         case let .placing(as: _, leftStones: (white: _, black: b)):
             if b >= 3 {
@@ -52,19 +52,37 @@ open class SmartPlayer: InitializablePlayer {
         default:
             self.currentLevels = self.levels
         }
-        let start = Date()
+    }
+    
+    public func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, previous: Game.Phase?, in game: Game) -> Game.Move? {
+        
+        self.setLevels(for: phase)
+        
+        //let start = Date()
         /*
-        let selected = self.scorer.selectMoveMinMax(for: possible, phase: phase, game: game, levels: self.currentLevels)
-        print("Selecting move took \(Date().timeIntervalSince(start)) seconds")
-        start = Date()
-        */
+         let selected = self.scorer.selectMoveMinMax(for: possible, phase: phase, game: game, levels: self.currentLevels)
+         print("Selecting move took \(Date().timeIntervalSince(start)) seconds")
+         start = Date()
+         */
         //let selectedOld = self.scorer.chooseMove(from: possible, phase: phase, game: game)
         let selectedAlphaBeta = self.scorer.selectMoveAlphaBeta(for: possible, phase: phase, game: game, levels: self.currentLevels)
-        print("AlphaBeta took \(Date().timeIntervalSince(start)) seconds")
+        //print("AlphaBeta took \(Date().timeIntervalSince(start)) seconds")
         
         //print("Standard:\n\(selected)\nAlphaBeta:\n\(selectedAlphaBeta)\nMoves equal: \(selected == selectedAlpha)")
         return selectedAlphaBeta.random()?.element
     }
+    
+    public func chooseMoveAlphaBeta(from possible: Game.PossibleMove, phase: Game.Phase, previous: Game.Phase?, in game: Game) -> Game.Move? {
+        self.setLevels(for: phase)
+        
+        return self.scorer.selectMoveAlphaBeta(for: possible, phase: phase, game: game, levels: self.currentLevels, previousPhase: previous).random()?.element
+    }
+    public func chooseMoveMinMax(from possible: Game.PossibleMove, phase: Game.Phase, previous: Game.Phase?, in game: Game) -> Game.Move? {
+        self.setLevels(for: phase)
+        
+        return self.scorer.selectMoveMinMax(for: possible, phase: phase, game: game, levels: self.currentLevels, previousPhase: previous).random()?.element
+    }
+    
     open func won(game: Game) {
         print("Smart player \(ownColor) won")
     }
@@ -445,7 +463,7 @@ extension GameBoardScorer {
 
 // MARK: - Max Min
 extension GameBoardScorer {
-    func selectMoveMinMax(for possible: Game.PossibleMove, phase: Game.Phase, game: Game, levels: Int) -> [Game.Move] {
+    func selectMoveMinMax(for possible: Game.PossibleMove, phase: Game.Phase, game: Game, levels: Int, previousPhase: Game.Phase? = nil) -> [Game.Move] {
         var bestScore: Double = -Double.infinity
         var bestMoves: [Game.Move] = []
         
@@ -467,7 +485,28 @@ extension GameBoardScorer {
             
             let nextStates = self.calculatingGame.fieldStates
             
-            let nextPhase: Game.Phase = next.nextPhase ?? self.calculatingGame.nextPhase(for: phase)
+            if let p = next.nextPhase {
+                if useMax {
+                    let score = self.minmax(states: nextStates, phase: p, level: levels - 1)
+                    if score > bestScore {
+                        bestScore = score
+                        bestMoves = [move]
+                    } else if score == bestScore {
+                        bestMoves.append(move)
+                    }
+                } else {
+                    let score = self.minmax(states: nextStates, phase: p, level: levels - 1)
+                    if score < bestScore {
+                        bestScore = score
+                        bestMoves = [move]
+                    } else if score == bestScore {
+                        bestMoves.append(move)
+                    }
+                }
+                continue
+            }
+            
+            let nextPhase: Game.Phase = self.calculatingGame.nextPhase(for: previousPhase ?? phase)
             
             if useMax {
                 let score = self.minmax(states: nextStates, phase: nextPhase, level: levels - 1)
@@ -587,14 +626,14 @@ extension GameBoardScorer {
             }
             scores[i] = score
         }
-        print(scores)
+        //print(scores)
         return bestMoves
     }
     func alphaBeta(states: [Field.State], phase: Game.Phase, level: Int, alpha: Double, beta: Double, previousPhase: Game.Phase? = nil) -> Double {
         // Values for finished game
         switch phase {
         case .winner(_):
-            print("Calculated winner")
+            //print("Calculated winner")
             return Double.infinity
         case .draw:
             return 0.0
@@ -620,7 +659,7 @@ extension GameBoardScorer {
             allValues.append(val)
             if val >= beta {
                 guard beta.isFinite else {
-                    print("\(alpha), \(beta), \(val)")
+                    //print("\(alpha), \(beta), \(val)")
                     return beta
                 }
                 return beta
@@ -630,7 +669,7 @@ extension GameBoardScorer {
             }
         }
         guard a.isFinite else {
-            print("\(a), \(beta), \(allValues)")
+            //print("\(a), \(beta), \(allValues)")
             return a
         }
         return a

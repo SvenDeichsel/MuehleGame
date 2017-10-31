@@ -38,6 +38,14 @@ class MuehleScene: SKScene {
     var playingColor: Game.Color? = nil
     var possibleMoves: Game.PossibleMove? = nil
     var chosenMove: Game.Move? = nil
+    // Signalisiert, dass der Nutzer das Spiel nicht mehr weiter spielen will
+    var endGame: Bool = false {
+        didSet {
+            if endGame {
+                self.choosingSemaphore.signal()
+            }
+        }
+    }
     let choosingSemaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
     
     override convenience init(size: CGSize) {
@@ -127,10 +135,13 @@ class MuehleScene: SKScene {
         guard possible.contains(from: Game.MuehleField(field: node.field)) else {
             return
         }
-        node.fillColor = .clear
         self.fromNode = node
         
-        self.createMovingNode(at: loc, with: node.field)
+        if case Game.PossibleMove.move(_) = possible {
+            node.fillColor = .clear
+            
+            self.createMovingNode(at: loc, with: node.field)
+        }
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -172,6 +183,7 @@ class MuehleScene: SKScene {
         self.undoMoving()
     }
     
+    /// Erstellt einen Stein, der vom Nutzer bewegt werden kann
     @discardableResult
     func createMovingNode(at point: CGPoint, with: Field) -> StoneNode {
         let node = StoneNode(field: with, size: CGSize(width: 2 * self.stoneRadius, height: 2 * self.stoneRadius))
@@ -185,12 +197,14 @@ class MuehleScene: SKScene {
         return node
     }
     
+    /// Macht das bewegen von Steinen durhc den Nutzer rückgängig
     func undoMoving() {
         if let n = self.fromNode {
             n.fillColor = n.field.color
         }
         removeMovingNode()
     }
+    /// Enfernt den vom Nutzer bewegbaren Stein
     func removeMovingNode() {
         guard let node = self.movingNode else {
             return
@@ -199,6 +213,7 @@ class MuehleScene: SKScene {
         self.movingNode = nil
     }
     
+    /// Gibt die Position eines Steines im Spielfeld zurück
     func position(for field: Field) -> CGPoint {
         let row = CGFloat(6-field.row)
         let column = CGFloat(field.column)
@@ -273,20 +288,35 @@ extension MuehleScene: GameDelegate {
     }
 }
 
-// Sorgt dafür, dass der Nutzer, mit der graphischen Oberfläche spielen kann.
+/*
+ Sorgt dafür, dass der Nutzer, mit der graphischen Oberfläche spielen kann.
+ 
+ Da die Anfragen des Spiels nicht auf dem main-thread ausgeführt werden, kann dieser blockiert werden, bis der Nutzer seine Auswahl getroffen hat.
+ */
 extension MuehleScene: Player {
-    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, in game: Game) -> Game.Move? {
+    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, previous: Game.Phase?, in game: Game) -> Game.Move? {
         self.informUserDelegate?.new(moves: possible)
         self.possibleMoves = possible
         
         var move: Game.Move?
         while move == nil {
             self.choosingSemaphore.wait()
+            if self.endGame {
+                self.endGame = false
+                self.possibleMoves = nil
+                self.chosenMove = nil
+                return nil
+            }
             move = self.chosenMove
             self.chosenMove = nil
         }
         
         self.possibleMoves = nil
+        
+        if self.endGame {
+            self.endGame = false
+            return nil
+        }
         
         self.informUserDelegate?.moveEnded()
         

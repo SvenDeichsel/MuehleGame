@@ -21,6 +21,8 @@ class GameViewController: UIViewController {
     @IBOutlet weak var OpponentLabel: UILabel!
     @IBOutlet weak var OpponentSegment: UISegmentedControl!
     
+    @IBOutlet weak var NewGameButton: UIButton!
+    
     var game: Game!
     var playingColor: Game.Color = .white
     
@@ -59,10 +61,35 @@ class GameViewController: UIViewController {
         
         self.WhiteButton.addTarget(self, action: #selector(GameViewController.didSelectWhite), for: .touchUpInside)
         self.BlackButton.addTarget(self, action: #selector(GameViewController.didSelectBlack), for: .touchUpInside)
+        self.NewGameButton.addTarget(self, action: #selector(GameViewController.newGame), for: .touchUpInside)
+        
+        self.NewGameButton.isEnabled = false
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        
+        if let data = UserDefaults.standard.data(forKey: "Game") {
+            do {
+                let old = try Game.unarchived(from: data, with: {
+                    self.scene?.playingColor = $0
+                    self.playingColor = $0
+                    return self.scene!
+                })
+                self.game = old.game
+                old.game.delegate = self.scene
+                
+                self.disableButtons()
+                self.gameQueue.async {
+                    for field in old.game.fields {
+                        self.scene?.needsRefresh(at: field)
+                    }
+                    self.game.play(start: old.phase)
+                }
+            } catch {
+                print(error)
+            }
+        }
     }
     
     @objc func didSelectWhite() {
@@ -99,6 +126,9 @@ class GameViewController: UIViewController {
             self.game.play()
         }
     }
+    @objc func newGame() {
+        self.scene?.endGame = true
+    }
     
     func createOpponent(for color: Game.Color) -> Player {
         return DispatchQueue.main.sync {() -> Player in
@@ -114,16 +144,28 @@ class GameViewController: UIViewController {
     }
     
     func disableButtons() {
-        self.WhiteButton.isEnabled = false
-        self.BlackButton.isEnabled = false
+        switch self.playingColor {
+        case .white:
+            self.WhiteButton.isUserInteractionEnabled = false
+            self.BlackButton.isEnabled = false
+        case .black:
+            self.WhiteButton.isEnabled = false
+            self.BlackButton.isUserInteractionEnabled = false
+        }
         
         self.OpponentSegment.isEnabled = false
+        self.NewGameButton.isEnabled = true
     }
     func enableButtons() {
         self.WhiteButton.isEnabled = true
+        self.WhiteButton.isUserInteractionEnabled = true
         self.BlackButton.isEnabled = true
+        self.BlackButton.isUserInteractionEnabled = true
         
         self.OpponentSegment.isEnabled = true
+        self.NewGameButton.isEnabled = false
+        
+        self.deleteGame()
     }
     
     override var shouldAutorotate: Bool {
@@ -168,6 +210,15 @@ extension GameViewController: InformUserDelegate {
                 self.Label.text = "No moves available"
             }
         }
+        DispatchQueue.global(qos: .background).async {
+            do {
+                let data = try self.game.archived()
+                
+                UserDefaults.standard.set(data, forKey: "Game")
+            } catch {
+                print(error)
+            }
+        }
     }
     func moveEnded() {
         DispatchQueue.main.async {
@@ -191,5 +242,8 @@ extension GameViewController: InformUserDelegate {
             self.Label.text = "Game was a draw."
             self.enableButtons()
         }
+    }
+    func deleteGame() {
+        UserDefaults.standard.removeObject(forKey: "Game")
     }
 }

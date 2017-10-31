@@ -18,9 +18,10 @@ public protocol Player: class {
     /// - Parameters:
     ///   - possible: Alle möglichen Züge
     ///   - phase: Die Phase in der das Spiel sich gerade befindet
+    ///   - previous: Die vorherige Phase, falls phase .removing ist.
     ///   - game: Das Spiel, was gerade gespielt wird
     /// - Returns: Den Zug, den der Spieler durchführen möchte.
-    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, in game: Game) -> Game.Move?
+    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, previous: Game.Phase?, in game: Game) -> Game.Move?
     
     
     /// Wird aufgerufen, wenn der Spieler gewonnen hat.
@@ -38,6 +39,12 @@ public protocol Player: class {
     ///
     /// - Parameter game: Das unentschiedene Spiel
     func draw(game: Game)
+}
+
+extension Player {
+    func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, in game: Game) -> Game.Move? {
+        return self.chooseMove(from: possible, phase: phase, previous: nil, in: game)
+    }
 }
 
 /**

@@ -18,7 +18,7 @@ final public class RandomPlayer: InitializablePlayer {
         self.color = color
     }
     
-    public func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, in game: Game) -> Game.Move? {
+    public func chooseMove(from possible: Game.PossibleMove, phase: Game.Phase, previous: Game.Phase?, in game: Game) -> Game.Move? {
         let all = possible.convertToMoves()
         
         guard let move = all.random() else {
