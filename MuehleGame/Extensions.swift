@@ -71,6 +71,15 @@ extension Array {
         }
         return arr
     }
+    public func count(where predicate: (Element) throws -> Bool) rethrows -> Int {
+        var c = 0
+        for e in self {
+            if try predicate(e) {
+                c += 1
+            }
+        }
+        return c
+    }
 }
 
 extension Array where Element == Field {

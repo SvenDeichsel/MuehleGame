@@ -127,7 +127,7 @@ class MuehleScene: SKScene {
         guard possible.contains(from: Game.MuehleField(field: node.field)) else {
             return
         }
-        node.fillColor = .lightGray
+        node.fillColor = .clear
         self.fromNode = node
         
         self.createMovingNode(at: loc, with: node.field)

@@ -42,11 +42,12 @@
                                 <rect key="frame" x="281" y="32" width="40" height="30"/>
                                 <state key="normal" title="White"/>
                             </button>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="1" translatesAutoresizingMaskIntoConstraints="NO" id="xtn-26-5km">
-                                <rect key="frame" x="85.5" y="623" width="99" height="29"/>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="2" translatesAutoresizingMaskIntoConstraints="NO" id="xtn-26-5km">
+                                <rect key="frame" x="85.5" y="623" width="179" height="29"/>
                                 <segments>
                                     <segment title="Zufall"/>
                                     <segment title="Mittel"/>
+                                    <segment title="Schwer"/>
                                 </segments>
                             </segmentedControl>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Gegner:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gso-jU-CcO">

@@ -28,6 +28,7 @@ class GameViewController: UIViewController {
     
     /// The queue on which the game is played
     let gameQueue: DispatchQueue = {() -> DispatchQueue in
+        // Muss ein serial Queue sein
         let queue = DispatchQueue.init(label: "GameQueue", qos: DispatchQoS.userInteractive, attributes: [])
         
         return queue
@@ -104,8 +105,10 @@ class GameViewController: UIViewController {
             switch self.OpponentSegment.selectedSegmentIndex {
             case 0:
                 return RandomPlayer(color: color)
+            case 1:
+                return SmartPlayer(color: color, numLevels: 4)
             default:
-                return SmartPlayer(color: color)
+                return SmartPlayer(color: color, numLevels: 6)
             }
         }
     }

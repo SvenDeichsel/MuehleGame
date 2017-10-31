@@ -355,6 +355,7 @@ open class Game {
                 return nil
             }
         }
+        
         guard let move = player.chooseMove(from: possible, phase: phase, in: self) else {
             if self.loggingEnabled {
                 self.log("Game forfitted by \(player)")
@@ -631,6 +632,7 @@ extension Game {
         case draw
         
         /// Die Spielfarbe, die gerade am Zug ist.
+        /// - Returns: Nil only for ended game
         func playingColor() -> Game.Color? {
             switch self {
             case .placing(as: let c, _), .moving(as: let c), .remove(as: let c), .jumping(for: let c):
@@ -825,10 +827,23 @@ extension Game {
     /// - place: Ein Stein wird in das gegebene Feld plaziert
     /// - move: Ein Stein wird vom Ursprungsfeld (from) zum Zielfeld bewegt (to)
     /// - remove: Ein Stein wird vom einem Feld entfernt
-    public enum Move {
+    public enum Move: Equatable {
         case place(in: MuehleField)
         case move(from: MuehleField, to: MuehleField)
         case remove(MuehleField)
+        
+        public static func ==(lhs: Game.Move, rhs: Game.Move) -> Bool {
+            switch (lhs,rhs) {
+            case let (.place(in: l),.place(in: r)):
+                return l == r
+            case let (.move(from: fL, to: tL),.move(from: fR, to: tR)):
+                return fL == fR && tL == tR
+            case let (.remove(l),.remove(r)):
+                return l == r
+            default:
+                return false
+            }
+        }
     }
 }
 
